@@ -1,0 +1,406 @@
+/*
+    Andrew Cotter
+*/
+
+
+#include <stdio.h>
+#include <stdlib.h>
+
+struct module {                     //Module Structure
+                char module_ID[6];
+                char module_NAME[20];
+                int module_CRED;
+                };
+
+struct student {                    //Student Structure
+                char ID [10];
+                char fname [15];
+                char lname [15];
+                float module_PERC[12];
+                float GPA;
+                };
+
+void Grade (float, FILE*);
+char* Award_Level (float);
+
+int main()
+{
+
+    int stu, sub, i=0, ii=0;    //Declaration of Variables _ i: counter _ ii: nested counter _ stu: no. of students _ sub: no. of subjects
+    float x=0, y=0;             //x: GPS _ y: Credit total
+    char sw;                    //sw: Switch Statement Value
+    float *gra_Ptr;             //Declaration of Pointers
+    FILE *Results_Ptr;
+    FILE *Read_Ptr;
+
+    printf("Enter 'm' to Manually Input Data or 'f' to Get Data From File:");
+    scanf("%c", &sw);
+
+    if(sw == 'm')
+    {
+
+        Results_Ptr = fopen("Results.txt","w");
+
+        printf("\nEnter The Number Of Students:");
+        scanf("%d", &stu);
+
+        printf("Enter The Number Of Modules(Max. of 12):");
+        scanf("%d", &sub);
+
+        struct student studata[stu];    //Declaration of array of student data, size is the amount of students
+        struct module subdata[sub];     //Declaration of array of subject data, size is the amount of subjects
+
+        printf("\n\t\t\t___Module Information Input___");
+
+        for(i=0; i<sub; i++)            //Module Input Loop
+        {
+            printf("\n\nEnter Module %d ID:", i+1);
+            scanf("%s", &subdata[i].module_ID);
+
+            printf("Enter Module Title:");
+            scanf("%s", &subdata[i].module_NAME);
+
+            printf("Enter Credit:");
+            scanf("%d", &subdata[i].module_CRED);
+        }
+
+        printf("\n\t\t\t___Student Information Input___");
+
+        for(i=0; i<stu; i++)            //Student Input Loop
+        {
+            printf("\n\nEnter Student %d ID:", (i+1));
+            scanf("%s", &studata[i].ID);
+
+            printf("Enter First Name and Last Name:");
+            scanf("%s%s", &studata[i].fname, &studata[i].lname);
+
+            for(ii=0; ii<sub; ii++)
+            {
+                printf("Enter % mark for %s:", subdata[ii].module_NAME);
+                scanf("%f", &studata[i].module_PERC[ii]);
+            }
+        }
+
+        for(i=0; i<sub; i++)            //Calculation of Credit Total
+        {
+            y += (subdata[i].module_CRED);
+        }
+
+        for(i=0; i<stu; i++)            //GPA Calculation Loop
+        {
+            x=0;
+
+            for(ii=0; ii<sub; ii++)
+            {
+                if(studata[i].module_PERC[ii] >=80 &&  studata[i].module_PERC[ii] <= 100)   // 4.00
+                {
+                    x += subdata[ii].module_CRED * 4;
+                }
+
+                if(studata[i].module_PERC[ii] >=70 &&  studata[i].module_PERC[ii] < 80)     //3.50
+                {
+                    x += subdata[ii].module_CRED * 3.5;
+                }
+
+                if(studata[i].module_PERC[ii] >=60 &&  studata[i].module_PERC[ii] < 70 )    //3.00
+                {
+                    x += subdata[ii].module_CRED * 3;
+                }
+
+                if(studata[i].module_PERC[ii] >=55 &&  studata[i].module_PERC[ii] < 60 )    //2.75
+                {
+                    x += subdata[ii].module_CRED * 2.75;
+                }
+
+                if(studata[i].module_PERC[ii] >= 50 &&  studata[i].module_PERC[ii] < 55 )   //2.50
+                {
+                    x += subdata[ii].module_CRED * 2.5;
+                }
+
+                if(studata[i].module_PERC[ii] >=40 &&  studata[i].module_PERC[ii] < 50 )    //2.00
+                {
+                    x += subdata[ii].module_CRED * 2;
+                }
+
+                if(studata[i].module_PERC[ii] >=35 &&  studata[i].module_PERC[ii] < 40 )    //1.50
+                {
+                    x += subdata[ii].module_CRED * 1.5;
+                }
+
+                if(studata[i].module_PERC[ii] >=0 &&  studata[i].module_PERC[ii] <35 )      //0.00
+                {
+                    x += subdata[ii].module_CRED * 0;
+                }
+
+            }
+
+            studata[i].GPA = x/y;       //GPA = GPS(Grade Point * Credit) / Credit Total
+        }
+
+        printf("\n\n\t\t\t___________________________\n");
+
+
+        for(i=0; i<stu; i++)            //Output Loop
+        {
+
+            printf("\n\t\t\t___Results for Student %d___", (i+1));
+            fprintf(Results_Ptr, "\n\t\t\t___Results for Student %d___", (i+1));
+
+            printf("\n\nStudent ID:\t%s\nName:\t\t%s %s\n\n", studata[i].ID, studata[i].fname, studata[i].lname);
+            fprintf(Results_Ptr, "\n\nStudent ID:\t%s\nName:\t\t%s %s\n\n", studata[i].ID, studata[i].fname, studata[i].lname);
+
+            printf("Module Name\tModule ID\tCredits\tModule Percentage\tGrade\tIndicative Quality of Performance\n\n");
+            fprintf(Results_Ptr, "Module Name\tModule ID\tCredits\tModule Percentage\tGrade\tIndicative Quality of Performance\n\n");
+
+            for(ii=0; ii<sub; ii++)
+            {
+                gra_Ptr = &studata[i].module_PERC[ii];
+
+                printf("%s\t%s\t\t%d%\t%.1f\t\t\t", subdata[ii].module_NAME, subdata[ii].module_ID, subdata[ii].module_CRED, studata[i].module_PERC[ii]);
+                fprintf(Results_Ptr, "%s\t%s\t\t%d\t%.1f\t\t\t", subdata[ii].module_NAME, subdata[ii].module_ID, subdata[ii].module_CRED, studata[i].module_PERC[ii]);
+
+                Grade(*gra_Ptr, Results_Ptr);
+            }
+
+            printf("\nGPA for %s:\t\t\t%.2f\n", studata[i].fname, studata[i].GPA); //GPA
+            fprintf(Results_Ptr, "\nGPA for %s:\t\t\t%.2f\n", studata[i].fname, studata[i].GPA);
+
+            printf("Classification of Award:\t%s\n\n", Award_Level(studata[i].GPA));   //Award Level
+            fprintf(Results_Ptr, "Classification of Award:\t%s\n\n", Award_Level(studata[i].GPA));
+
+        }
+
+        fclose(Results_Ptr);
+
+    }                               //End of Manual 'if'
+
+    if(sw == 'f')                   //Start of File input 'if'
+    {
+        Read_Ptr = fopen("Input.txt", "r");
+        Results_Ptr = fopen("Results.txt","w");
+
+        if(Read_Ptr == NULL)
+        {
+            printf("File cannot be located");
+        }
+
+        else
+            printf("File opened sucessfully");
+
+
+        fscanf(Read_Ptr, "%d", &stu);
+
+        fscanf(Read_Ptr, "%d", &sub);
+
+        struct student studata[stu];
+        struct module subdata[sub];
+
+        for(i=0; i<sub; i++)
+        {
+            fscanf(Read_Ptr, "%s", &subdata[i].module_ID);
+
+            fscanf(Read_Ptr, "%s", &subdata[i].module_NAME);
+
+            fscanf(Read_Ptr, "%d", &subdata[i].module_CRED);
+        }
+
+
+        for(i=0; i<stu; i++)
+        {
+            fscanf(Read_Ptr, "%s", &studata[i].ID);
+
+            fscanf(Read_Ptr, "%s%s", &studata[i].fname, &studata[i].lname);
+
+            for(ii=0; ii<sub; ii++)
+            {
+                fscanf(Read_Ptr, "%f", &studata[i].module_PERC[ii]);
+            }
+        }
+
+        for(i=0; i<sub; i++)
+        {
+            y += (subdata[i].module_CRED);
+        }
+
+        for(i=0; i<stu; i++)
+        {
+            x=0;
+
+            for(ii=0; ii<sub; ii++)
+            {
+                if(studata[i].module_PERC[ii] >=80 &&  studata[i].module_PERC[ii] <= 100)   // 4.00
+                {
+                    x += subdata[ii].module_CRED * 4;
+                }
+
+                if(studata[i].module_PERC[ii] >=70 &&  studata[i].module_PERC[ii] < 80)     //3.50
+                {
+                    x += subdata[ii].module_CRED * 3.5;
+                }
+
+                if(studata[i].module_PERC[ii] >=60 &&  studata[i].module_PERC[ii] < 70 )    //3.00
+                {
+                    x += subdata[ii].module_CRED * 3;
+                }
+
+                if(studata[i].module_PERC[ii] >=55 &&  studata[i].module_PERC[ii] < 60 )    //2.75
+                {
+                    x += subdata[ii].module_CRED * 2.75;
+                }
+
+                if(studata[i].module_PERC[ii] >= 50 &&  studata[i].module_PERC[ii] < 55 )   //2.50
+                {
+                    x += subdata[ii].module_CRED * 2.5;
+                }
+
+                if(studata[i].module_PERC[ii] >=40 &&  studata[i].module_PERC[ii] < 50 )    //2.00
+                {
+                    x += subdata[ii].module_CRED * 2;
+                }
+
+                if(studata[i].module_PERC[ii] >=35 &&  studata[i].module_PERC[ii] < 40 )    //1.50
+                {
+                    x += subdata[ii].module_CRED * 1.5;
+                }
+
+                if(studata[i].module_PERC[ii] >=0 &&  studata[i].module_PERC[ii] <35 )      //0.00
+                {
+                    x += subdata[ii].module_CRED * 0;
+                }
+
+            }
+
+            studata[i].GPA = x/y;       //GPA = GPS(Grade Point * Credit) / Credit Total
+        }
+
+
+        for(i=0; i<stu; i++)
+        {
+
+            printf("\n\t\t\t___Results for Student %d___", (i+1));
+            fprintf(Results_Ptr, "\n\t\t\t___Results for Student %d___", (i+1));
+
+            printf("\n\nStudent ID:\t%s\nName:\t\t%s %s\n\n", studata[i].ID, studata[i].fname, studata[i].lname);
+            fprintf(Results_Ptr, "\n\nStudent ID:\t%s\nName:\t\t%s %s\n\n", studata[i].ID, studata[i].fname, studata[i].lname);
+
+            printf("Module Name\tModule ID\tCredits\tModule Percentage\tGrade\tIndicative Quality of Performance\n\n");
+            fprintf(Results_Ptr, "Module Name\tModule ID\tCredits\tModule Percentage\tGrade\tIndicative Quality of Performance\n\n");
+
+            for(ii=0; ii<sub; ii++)
+            {
+                gra_Ptr = &studata[i].module_PERC[ii];
+
+                printf("%s\t%s\t\t%d%\t%.1f\t\t\t", subdata[ii].module_NAME, subdata[ii].module_ID, subdata[ii].module_CRED, studata[i].module_PERC[ii]);
+                fprintf(Results_Ptr, "%s\t%s\t\t%d\t%.1f\t\t\t", subdata[ii].module_NAME, subdata[ii].module_ID, subdata[ii].module_CRED, studata[i].module_PERC[ii]);
+
+                Grade(*gra_Ptr, Results_Ptr);
+            }
+            printf("\nGPA for %s:\t\t\t%.2f\n", studata[i].fname, studata[i].GPA);
+            fprintf(Results_Ptr, "\nGPA for %s:\t\t\t%.2f\n", studata[i].fname, studata[i].GPA);
+
+            printf("Classification of Award:\t%s\n\n", Award_Level(studata[i].GPA));
+            fprintf(Results_Ptr, "Classification of Award:\t%s\n\n", Award_Level(studata[i].GPA));
+
+        }
+
+        fclose(Results_Ptr);
+        fclose(Read_Ptr);
+    }                               //End of File 'if'
+
+
+return 0;
+}                                   //End of Main
+
+
+
+char* Award_Level(float GPA)        //Award Level Function
+{
+        if(GPA >= 3.25 && GPA <= 4.00)
+        {
+            return "First Class Honours";
+        }
+
+        if(GPA >= 3.00 && GPA <3.25)
+        {
+            return "Second Class Honours, Grade 1";
+        }
+
+        if(GPA >= 2.5 && GPA <3.00)
+        {
+            return "Second Class Honours, Grade 2";
+        }
+
+        if(GPA >= 2.00 && GPA <2.5)
+        {
+            return "Pass";
+        }
+
+        if(GPA < 2.00)
+        {
+            return "Fail";
+        }
+
+        else
+        {
+            return "Error In GPA Calculation";
+        }
+
+return;
+}
+
+
+void Grade (float Percentage, FILE* Results_Ptr)   //Grade Equivalent Function
+{
+
+    if(Percentage >= 80 && Percentage <= 100)
+    {
+        printf("A\n");
+        fprintf(Results_Ptr, "A\tExcellent\n");
+    }
+
+    if(Percentage >= 70 && Percentage < 80)
+    {
+        printf("B+\n");
+        fprintf(Results_Ptr, "B+\tVery Good\n");
+    }
+
+    if(Percentage >= 60 && Percentage < 70)
+    {
+        printf("B\n");
+        fprintf(Results_Ptr, "B\tGood\n");
+    }
+
+    if(Percentage >= 55 && Percentage < 60)
+    {
+        printf("B-\n");
+        fprintf(Results_Ptr, "B-\tAbove Average\n");
+    }
+
+    if(Percentage >= 50 && Percentage < 55)
+    {
+        printf("C+\n");
+        fprintf(Results_Ptr, "C+\tFair\n");
+    }
+
+    if(Percentage >= 40 && Percentage < 50)
+    {
+        printf("C\n");
+        fprintf(Results_Ptr, "C\tPass\n");
+    }
+
+    if(Percentage >= 35 && Percentage < 40)
+    {
+        printf("D\n");
+        fprintf(Results_Ptr, "D\tPoor\n");
+    }
+
+    if(Percentage >= 0 && Percentage < 35)
+    {
+        printf("F\n");
+        fprintf(Results_Ptr, "F\tFail\n");
+    }
+
+
+return;
+}
+
